@@ -62,6 +62,7 @@ func handleMessage(serverAddress string) {
 }
 
 func readLines(in chan string, cancel context.CancelFunc) {
+	defer reader.Close()
 	reader := bufio.NewReader(reader)
 	for {
 		s, err := reader.ReadString('\n')
@@ -100,29 +101,19 @@ func receiveMessage(ctx context.Context, conn net.Conn) {
 		case <-ctx.Done():
 			return
 		default:
-			var buf [128]byte
-			n, err := conn.Read(buf[:])
+			buf := make([]byte, 1024)
+			_, err := conn.Read(buf)
 			if err != nil {
 				if err == io.EOF {
 					fmt.Println("Read from tcp server EOF")
-					return
 				} else {
 					fmt.Println("Read from tcp server with unexpected error:", err)
 				}
 				return
 			}
-			ret := []byte{}
-			for _, b := range buf[:n] {
-				if b == 0x00 {
-					break
-				}
-				ret = append(ret, b)
-			}
-			if string(ret) == "EXIT" {
+			fmt.Printf("Recived from server, data: %s.\n", string(buf))
+			if strings.HasPrefix(string(buf), "EXIT") {
 				return
-			}
-			if len(ret) > 0 {
-				fmt.Printf("Recived from server, data: %s\n", string(ret))
 			}
 		}
 	}
