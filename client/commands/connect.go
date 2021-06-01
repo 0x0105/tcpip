@@ -66,7 +66,6 @@ func readLines(in chan string, cancel context.CancelFunc) {
 	reader := bufio.NewReader(reader)
 	for {
 		s, err := reader.ReadString('\n')
-		// check for errors
 		if err != nil {
 			if err == io.EOF {
 				fmt.Println("EOF in read string", err)

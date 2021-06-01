@@ -14,6 +14,6 @@ func main() {
 	defer listener.Close()
 	for {
 		conn, _ := listener.Accept()
-		handlers.HandleConnection(conn)
+		go handlers.HandleConnection(conn)
 	}
 }
