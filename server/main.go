@@ -13,7 +13,8 @@ func main() {
 	}
 	defer listener.Close()
 	cm := NewConnMngr()
-	msg := make(chan Msg)
+	defer cm.Close()
+	msg := make(chan Segment)
 	defer close(msg)
 	go func() {
 		for {
@@ -22,26 +23,24 @@ func main() {
 			go receiveMsg(conn, msg)
 		}
 	}()
-	defer cm.Close()
 	for {
 		select {
 		case m := <-msg:
 			all := cm.All()
 			for _, c := range all {
-				_, err = (c).Write([]byte(m.Message))
+				_, err = (c).Write([]byte(m.Content))
 				if err == io.EOF {
-					cm.Remove(m.From)
+					cm.Remove(m.Sender)
 					_ = c.Close()
 					break
 				}
-				fmt.Printf("Send msg %s to %s.\n", m.Message, m.From)
+				fmt.Printf("Send msg %s to %s.\n", m.Content, m.Sender)
 			}
 		}
 	}
-
 }
 
-func receiveMsg(conn net.Conn, msg chan Msg) {
+func receiveMsg(conn net.Conn, msg chan Segment) {
 	remoteAddr := conn.RemoteAddr().String()
 	fmt.Println("Client connected from: " + remoteAddr)
 
@@ -58,10 +57,10 @@ func receiveMsg(conn net.Conn, msg chan Msg) {
 		}
 		str := string(buf[:reqLen])
 		fmt.Printf("len: %d, recv: %s\n", reqLen, str)
-		msg <- Msg{
-			Message: str,
-			From:    remoteAddr,
-			To:      "",
+		msg <- Segment{
+			Content: str,
+			Sender:  remoteAddr,
+			Receipt: "",
 		}
 	}
 }

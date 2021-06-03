@@ -5,10 +5,11 @@ import (
 	"sync"
 )
 
-type Msg struct {
-	Message string
-	From    string
-	To      string
+type Segment struct {
+	Cmd     string
+	Sender  string
+	Receipt string
+	Content string
 }
 
 type ConnMngr struct {
@@ -23,7 +24,6 @@ func NewConnMngr() *ConnMngr {
 		mutex:   sync.RWMutex{},
 	}
 }
-
 
 func (cm *ConnMngr) Add(clientAddress string, conn net.Conn) {
 	cm.mutex.Lock()
