@@ -2,23 +2,22 @@
 
 ## 概述
 
-`IMP` 基于 `TCP` 协议实现的即时通讯协议, 参考了 [MSN](https://tools.ietf.org/pdf/draft-movva-msn-messenger-protocol-00.pdf)
+`IMP` 是基于 `TCP` 协议实现的即时通讯协议, 参考了 [MSN](https://tools.ietf.org/pdf/draft-movva-msn-messenger-protocol-00.pdf)
 和 [SLCK](https://ieftimov.com/post/understanding-bytes-golang-build-tcp-protocol/). 此协议仅用于计算机网络的学习, 不具备生产可用性.
 
-## 协议
+## 支持的命令
 
-| ID         | Sent by   | Description     |
-| ---------  | --------  |  -------------- |
-| `REG`      | Client    | Register as client  |
-| `JOIN`     | Client    | Join a channel  |
-| `LEAVE`    | Client    | Leave a channel |
-| `MSG`      | Both      | Send or receive a message to/from entity (channel or user) |
-| `CHNS`     | Client    | List available channels |
-| `USRS`     | Client    | List users |
-| `OK`       | Server    | Command acknowledgement |
-| `ERR`      | Server    | Error |
+| ID         | 发送者        | 描述                     |
+| ---------  | --------     |  --------------         |
+| `REG`      | 客户端        | 客户端注册                |
+| `CHNS`     | 客户端        | 列出所有的频道             |
+| `JOIN`     | 客户端        | 加入某个频道(没有则创建)    |
+| `LEAVE`    | 客户端        | 离开某个频道              |
+| `MSG`      | 客户端和服务端  | 发送或接收频道的消息       |
+| `OK`       | 客户端和服务端  | 命令确认                 |
+| `ERR`      | 客户端和服务端  | 错误                    |
 
-Let's explore each of them:
+接下来依次解释每个命令:
 
 ### REG
 
@@ -79,7 +78,7 @@ argument, followed with the body length and the body itself.
 Syntax:
 
 ```text
-MSG <entity-id> <length>\r\n[payload]
+MSG <entity-type> <entity-id> <length>\r\n[payload]
 ```
 
 where:
@@ -91,13 +90,13 @@ where:
 **Example 1:** send a `Hello everyone!` message to the `#general` channel:
 
 ```text
-MSG #general 16\r\nHello everyone!
+MSG CHN general 16\r\nHello everyone!
 ```
 
 **Example 2:** send a `Hello!` message to `@jane`:
 
 ```text
-MSG @jane 4\r\nHey!
+MSG USER jane 4\r\nHey!
 ```
 
 ### CHNS
@@ -111,14 +110,14 @@ Syntax:
 CHNS
 ```
 
-### USRS
+### USERS
 
-To list all users, the client can send the `USRS` message. The server will reply with the list of available users.
+To list all users in a channel, the client can send the `USERS` message. The server will reply with the list of available users.
 
 Syntax:
 
 ```text
-USRS
+USERS <channel-id>
 ```
 
 ### OK/ERR
